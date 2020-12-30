@@ -317,4 +317,6 @@ auto InputDevice::GetPyInputDevice(bool new_ref) -> PyObject* {
 
 auto InputDevice::GetPartyButtonName() const -> std::string { return ""; }
 
+void InputDevice::Rumble(float intensity, int duration) {}
+
 }  // namespace ballistica

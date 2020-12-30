@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ballistica/input/device/input_device.h"
+#include "ballistica/platform/min_sdl.h"
 
 namespace ballistica {
 
@@ -37,6 +38,7 @@ class Joystick : public InputDevice {
 
   auto sdl_joystick_id() const -> int { return sdl_joystick_id_; }
   auto sdl_joystick() const -> SDL_Joystick* { return sdl_joystick_; }
+  auto sdl_haptic() const -> SDL_Haptic* { return sdl_haptic_; }
 
   auto GetAllowsConfiguring() -> bool override { return can_configure_; }
 
@@ -55,6 +57,8 @@ class Joystick : public InputDevice {
 
   auto IsController() -> bool override { return true; }
   auto IsSDLController() -> bool override { return (sdl_joystick_ != nullptr); }
+
+  void Rumble(float intensity, int duration) override;
 
   auto ShouldBeHiddenFromUser() -> bool override;
 
@@ -109,6 +113,7 @@ class Joystick : public InputDevice {
   //  (we never actually access the sdl joystick directly outside of our
   //  constructor)
   SDL_Joystick* sdl_joystick_{};
+  SDL_Haptic* sdl_haptic_{};
 
   bool is_test_input_{};
   bool is_remote_control_{};

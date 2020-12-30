@@ -281,6 +281,7 @@ void SDLApp::InitSDL() {
     sdl_flags |= SDL_INIT_VIDEO;
     if (explicit_bool(true)) {
       sdl_flags |= SDL_INIT_JOYSTICK;
+      sdl_flags |= SDL_INIT_HAPTIC;
 
       // KILL THIS ONCE MAC SDL1.2 BUILD IS DEAD.
       // Register our hotplug callbacks in our funky custom mac build.

@@ -63,6 +63,10 @@ Joystick::Joystick(int sdl_joystick_id, const std::string& custom_device_name,
 
     sdl_joystick_ = SDL_JoystickOpen(sdl_joystick_id);
     assert(sdl_joystick_);
+    sdl_haptic_ = SDL_HapticOpen(sdl_joystick_id);
+    if (SDL_HapticRumbleInit(sdl_haptic_) != 0) {
+      sdl_haptic_ = NULL;
+    }
 
     // In SDL2 we're passed a device-id but that's only used to open the
     // joystick; events and most everything else use an instance ID, so we store
@@ -100,6 +104,7 @@ Joystick::Joystick(int sdl_joystick_id, const std::string& custom_device_name,
   } else {
     // Its a manual joystick.
     sdl_joystick_ = nullptr;
+    sdl_haptic_ = nullptr;
 
     is_mfi_controller_ = (custom_device_name_ == kMFiControllerName);
     is_mac_wiimote_ = (custom_device_name_ == "Wiimote");
@@ -328,6 +333,11 @@ Joystick::~Joystick() {
     auto joystick = sdl_joystick_;
     g_app->PushCall([joystick] { SDL_JoystickClose(joystick); });
     sdl_joystick_ = nullptr;
+    if (sdl_haptic_) {
+      auto haptic = sdl_haptic_;
+      g_app->PushCall([haptic] { SDL_HapticClose(haptic); });
+      sdl_haptic_ = nullptr;
+    }
 #else
     Log("sdl_joystick_ set in non-sdl-joystick build destructor.");
 #endif  // BA_ENABLE_SDL_JOYSTICKS
@@ -1217,6 +1227,7 @@ void Joystick::HandleSDLEvent(const SDL_Event* e) {
         InputCommand(InputType::kJumpPress);
         InputCommand(InputType::kFlyPress);
       } else if (e->jbutton.button == punch_button_) {
+        Rumble(0.3, 200);
         InputCommand(InputType::kPunchPress);
       } else if (e->jbutton.button == bomb_button_) {
         InputCommand(InputType::kBombPress);
@@ -1568,6 +1579,10 @@ auto Joystick::GetDeviceIdentifier() -> std::string {
 
 auto Joystick::GetPartyButtonName() const -> std::string {
   return g_game->CharStr(SpecialChar::kTopButton);
+}
+
+void Joystick::Rumble(float intensity, int duration) {
+  SDL_HapticRumblePlay(sdl_haptic_, intensity, duration);
 }
 
 }  // namespace ballistica
